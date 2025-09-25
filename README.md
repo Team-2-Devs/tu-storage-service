@@ -4,9 +4,8 @@
 Storage microservice for Trackunit.
 
 ## Purpose
-- Issue short-lived pre-signed PUT/GET URLs for object storage.  
-- Enforce consistent object key schemes and TTLs.  
-- Serve as an internal utility service behind the platform gateway.  
+- Issue short-lived pre-signed PUT/GET URLs for object storage 
+- Enforce consistent object key schemes and TTLs
 
 ## Endpoints (v1)
 *Note: endpoints are defined here as part of the design. They are not yet implemented unless otherwise stated.*
@@ -17,7 +16,7 @@ Storage microservice for Trackunit.
 
 ## Tech
 - .NET 8, ASP.NET Core Web API  
-- Clean/hexagonal layering: Api, Application, Domain, Infrastructure  
+- Clean/hexagonal layering – Api, Application, Domain, Infrastructure
 - Stateless service (issues URLs without persisting state)  
 - CI via reusable org workflow (see [Team-2-Devs/.github](https://github.com/Team-2-Devs/.github))
 
@@ -25,10 +24,7 @@ Storage microservice for Trackunit.
 - [tu-ingestion-service](https://github.com/Team-2-Devs/tu-ingestion-service) – handles upload initiation and confirmation, publishes events
 - [tu-media-access-service](https://github.com/Team-2-Devs/tu-media-access-service) – provides authorized access to media via pre-signed GET from Storage
 
-
 ## Local dev
 ```bash
-dotnet restore
-dotnet build
 dotnet run --project src/Storage.Api
 ```
