@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Storage.Domain.ValueObjects;
@@ -77,7 +76,7 @@ public sealed partial class ObjectKey : IEquatable<ObjectKey>
   /// <exception cref="ArgumentException">Thrown when <paramref name="input"/> is not a valid object key.</exception>
   public static ObjectKey Parse(string input)
   {
-    ArgumentNullException.ThrowIfNull(input, nameof(input));
+    ArgumentNullException.ThrowIfNullOrEmpty(input, nameof(input));
 
     if (!TryParse(input, out var key, out var error))
       throw new ArgumentException($"Invalid ObjectKey: {error}", nameof(input));
