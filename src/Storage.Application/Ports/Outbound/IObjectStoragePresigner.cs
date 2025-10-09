@@ -17,7 +17,7 @@ public interface IObjectStoragePresigner
   /// <param name="ct">Cancellation token.</param>
   /// <returns>The URL and the absolute expiry timestamp in UTC.</returns>
   public Task<(string url, DateTimeOffset expiresAt)> PresignPutAsync(
-    ObjectKey objectKey,
+    ObjectKey key,
     ContentType contentType,
     TtlSeconds ttl,
     CancellationToken ct = default
