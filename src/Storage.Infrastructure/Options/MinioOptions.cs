@@ -9,7 +9,6 @@ public sealed class MinioOptions
   [Required] public required string SecretKey { get; init; } = null!;
   [Required] public required string BucketName { get; init; } = null!;
 
-  public bool UseSsl { get; init; } = true;
+  public bool UseSsl { get; init; }
   public string Region { get; init; } = "eu-central-1";
-  public string? PublicBaseUrl { get; init; }
 }
