@@ -1,19 +1,21 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using Storage.Application.DependencyInjection;
+using Storage.Infrastructure.DependencyInjection;
 
-//
+var builder = WebApplication.CreateBuilder(args);
+
 // Services
-//
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
+// Compose layers
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration); // Composition root wires Infrastructure dependencies
+
 var app = builder.Build();
 
-
-//
 // Pipeline
-//
 if (app.Environment.IsDevelopment())
 {
   app.UseSwagger();
