@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Storage.Application\Storage.Application.csproj" />
-    <ProjectReference Include="..\Storage.Domain\Storage.Domain.csproj" />
+    <Compile Remove="Config\**" />
+    <EmbeddedResource Remove="Config\**" />
+    <None Remove="Config\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Config\" />
+    <ProjectReference Include="..\Storage.Application\Storage.Application.csproj" />
+    <ProjectReference Include="..\Storage.Domain\Storage.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
