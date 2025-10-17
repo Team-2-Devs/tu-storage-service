@@ -9,10 +9,10 @@ namespace Storage.Infrastructure.ExternalServices.Minio;
 
 public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
 {
-  private readonly MinioClient _client;
+  private readonly IMinioClient _client;
   private readonly MinioOptions _options;
 
-  public MinioObjectStoragePresigner(MinioClient client, IOptions<MinioOptions> opt)
+  public MinioObjectStoragePresigner(IMinioClient client, IOptions<MinioOptions> opt)
   {
     _client = client;
     _options = opt.Value;
