@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Storage.Application.Ports.Inbound;
 using Storage.Application.UseCases;
 
 namespace Storage.Application.DependencyInjection;
@@ -10,7 +11,7 @@ public static class ServiceCollectionExtensions
   public static IServiceCollection AddApplication(this IServiceCollection services)
   {
     // Use cases
-    services.AddScoped<PresignPutUrl>();
+    services.AddScoped<IPresignPutUrl, PresignPutUrl>();
 
     // Validators
     // Behaviors
