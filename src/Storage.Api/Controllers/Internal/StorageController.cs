@@ -21,8 +21,7 @@ public sealed class StorageController : ControllerBase
     return result switch
     {
       PresignPutUrlResult.Success s => Ok(new PresignPutResponse(s.Url, s.ExpiresAt)),
-      PresignPutUrlResult.Invalid i => UnprocessableEntity(new { errors = i.Errors }),
-      _ => Problem("Internal Server Error", statusCode: 500)
+      PresignPutUrlResult.Invalid i => UnprocessableEntity(new { errors = i.Errors })
     };
   }
 }
