@@ -24,9 +24,9 @@ public readonly struct TtlSeconds : IEquatable<TtlSeconds>
     ttl = default;
     error = null;
 
-    if (input < 1 || input > 60)
+    if (input < 1 || input > 3600)
     {
-      error = "Range1To60";
+      error = "Range1To3600";
       return false;
     }
 
