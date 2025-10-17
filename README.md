@@ -28,3 +28,6 @@ Storage microservice for Trackunit.
 ```bash
 dotnet run --project src/Storage.Api
 ```
+
+## Developer setup
+For local infrastructure (MinIO) and smoke test instructions, see [docs/DEV.md](docs/DEV.md).
