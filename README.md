@@ -31,3 +31,10 @@ dotnet run --project src/Storage.Api
 
 ## Developer setup
 For local infrastructure (MinIO) and smoke test instructions, see [docs/DEV.md](docs/DEV.md).
+
+## API Contracts
+Formal versioned specifications of service-to-service interfaces.
+
+- [Storage Service v1](docs/api-contracts/v1-storage.md) – frozen contract for `/internal/v1/storage` endpoints:
+  - `POST /presign-put` (implemented)
+  - `POST /presign-get` (planned)
