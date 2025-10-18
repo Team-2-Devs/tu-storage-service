@@ -171,7 +171,7 @@ docker compose down -v
 ---
 
 ## Reference
-For service overview and related services, see [README.md](README.md).
+For service overview and related services, see [README.md](../README.md).
 
 ---
 
