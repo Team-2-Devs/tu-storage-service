@@ -13,13 +13,25 @@ public interface IObjectStoragePresigner
   /// </summary>
   /// <param name="key">Validated object key.</param>
   /// <param name="contentType">Validated image content type.</param>
-  /// <param name="ttl">Validated time-to-live (1..60 seconds).</param>
+  /// <param name="ttl">Validated time-to-live (1..3600 seconds).</param>
   /// <param name="ct">Cancellation token.</param>
   /// <returns>The URL and the absolute expiry timestamp in UTC.</returns>
   public Task<(string url, DateTimeOffset expiresAt)> PresignPutAsync(
     ObjectKey key,
     ContentType contentType,
     TtlSeconds ttl,
+    CancellationToken ct = default
+    );
+
+  /// <summary>
+  /// Creates a presigned GET URL for downloading an object with a given TTL.
+  /// </summary>
+  /// <param name="key">Validated object key.</param>
+  /// <param name="ttl">Validated time-to-live (1..3600 seconds).</param>
+  /// <param name="ct">Cancellation token.</param>
+  public Task<(string url, DateTimeOffset expiresAt)> PresignGetAsync(
+    ObjectKey key,
+    TtlSeconds ttl, 
     CancellationToken ct = default
     );
 }
