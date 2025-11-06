@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Storage.Infrastructure.Options;
+namespace Storage.Infrastructure.Adapters.ObjectStorage.Options;
 
 public sealed class MinioOptions
 {

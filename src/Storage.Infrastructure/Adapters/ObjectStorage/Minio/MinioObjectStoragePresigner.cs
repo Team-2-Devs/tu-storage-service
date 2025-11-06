@@ -3,9 +3,9 @@ using Minio;
 using Minio.DataModel.Args;
 using Storage.Application.Ports.Outbound;
 using Storage.Domain.ValueObjects;
-using Storage.Infrastructure.Options;
+using Storage.Infrastructure.Adapters.ObjectStorage.Options;
 
-namespace Storage.Infrastructure.ExternalServices.Minio;
+namespace Storage.Infrastructure.Adapters.ObjectStorage.Minio;
 
 public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
 {
@@ -28,6 +28,22 @@ public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
       .WithExpiry(expirySeconds);
 
     var url = await _client.PresignedPutObjectAsync(args).ConfigureAwait(false);
+
+    var expiresAt = DateTimeOffset.UtcNow.AddSeconds(expirySeconds);
+
+    return (url, expiresAt);
+  }
+
+  public async Task<(string url, DateTimeOffset expiresAt)> PresignGetAsync(ObjectKey key, TtlSeconds ttl, CancellationToken ct = default)
+  {
+    var expirySeconds = ttl.Value;
+
+    var args = new PresignedGetObjectArgs()
+      .WithBucket(_options.BucketName)
+      .WithObject(key.Value)
+      .WithExpiry(expirySeconds);
+
+    var url = await _client.PresignedGetObjectAsync(args).ConfigureAwait(false);
 
     var expiresAt = DateTimeOffset.UtcNow.AddSeconds(expirySeconds);
 

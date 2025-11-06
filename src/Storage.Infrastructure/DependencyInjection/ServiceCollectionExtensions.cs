@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Minio;
 using Storage.Application.Ports.Outbound;
-using Storage.Infrastructure.ExternalServices.Minio;
-using Storage.Infrastructure.Options;
+using Storage.Infrastructure.Adapters.ObjectStorage.Minio;
+using Storage.Infrastructure.Adapters.ObjectStorage.Options;
 
 namespace Storage.Infrastructure.DependencyInjection;
 
@@ -13,6 +13,13 @@ public static class ServiceCollectionExtensions
 {
   /// <summary>Registers Infrastructure: binds configuration to typed options, creates the MinIO client (singleton), and registers outbound adapters.</summary>
   public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
+  {
+    AddObjectStorage(services, config);
+
+    return services;
+  }
+
+  private static void AddObjectStorage(IServiceCollection services, IConfiguration config)
   {
     // Bind configuration section to typed options and validate
     services
@@ -26,7 +33,7 @@ public static class ServiceCollectionExtensions
      .ValidateOnStart();
 
     // Register MinIO client (singleton)
-    services.AddSingleton(sp =>
+    services.AddSingleton<IMinioClient>(sp =>
     {
       var opt = sp.GetRequiredService<IOptions<MinioOptions>>().Value;
 
@@ -40,7 +47,5 @@ public static class ServiceCollectionExtensions
 
     // Register outbound adapter implementing the application port
     services.AddScoped<IObjectStoragePresigner, MinioObjectStoragePresigner>();
-
-    return services;
   }
 }
