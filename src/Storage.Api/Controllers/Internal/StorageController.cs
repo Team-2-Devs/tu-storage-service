@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Storage.Api.Contracts;
 using Storage.Application.Ports.Inbound;
+using Storage.Application.Ports.Inbound.Contracts;
 
 namespace Storage.Api.Controllers.Internal;
 

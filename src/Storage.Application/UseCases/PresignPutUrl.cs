@@ -1,4 +1,5 @@
 ﻿using Storage.Application.Ports.Inbound;
+using Storage.Application.Ports.Inbound.Contracts;
 using Storage.Application.Ports.Outbound;
 using Storage.Domain.ValueObjects;
 
