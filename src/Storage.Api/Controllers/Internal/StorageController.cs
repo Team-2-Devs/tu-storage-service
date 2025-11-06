@@ -8,14 +8,20 @@ namespace Storage.Api.Controllers.Internal;
 [Route("internal/v1/storage")]
 public sealed class StorageController : ControllerBase
 {
+  private IPresignPutUrl _presignPutUrl;
+
+  public StorageController(IPresignPutUrl presignPutUrl)
+  {
+    _presignPutUrl = presignPutUrl;
+  }
+
   /// <summary>Internal endpoint that generates presigned PUT URLs for object uploads.</summary>
   [HttpPost("presign-put")]
   public async Task<IActionResult> PresignPut(
-    [FromServices] IPresignPutUrl useCase,
     [FromBody] PresignPutRequest req,
     CancellationToken ct)
   {
-    var result = await useCase.HandleAsync(
+    var result = await _presignPutUrl.HandleAsync(
       new PresignPutUrlCommand(req.Key, req.ContentType, req.TtlSec), ct);
 
     return result switch
