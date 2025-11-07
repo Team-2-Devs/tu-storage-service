@@ -4,7 +4,7 @@
 Storage microservice for Trackunit.
 
 ## Status
-- Under development
+- Active Development
 
 ## Purpose
 - Issue short-lived pre-signed PUT/GET URLs for object storage 
@@ -14,7 +14,7 @@ Storage microservice for Trackunit.
 *Note: endpoints are defined here as part of the design. They are not yet implemented unless otherwise stated.*
 
 - POST /internal/v1/storage/presign-put – create pre-signed URL for uploading an object  
-- POST /internal/v1/storage/presign-get – create pre-signed URL for retrieving an object  
+- POST /internal/v1/storage/presign-get – create pre-signed URL for downloading an object  
 - GET  /health – service health check  
 
 ## Tech
@@ -41,4 +41,5 @@ See [v1-storage.md](./docs/api-contracts/v1-storage.md).
 
 Frozen contract for `/internal/v1/storage` endpoints:
 - `POST /presign-put` (implemented)
-- `POST /presign-get` (planned)
+- `POST /presign-get` (implemented)
+- `GET  /health` (implemented)
