@@ -3,7 +3,6 @@ using Minio;
 using Minio.DataModel.Args;
 using Storage.Application.Ports.Outbound;
 using Storage.Domain.ValueObjects;
-using Storage.Infrastructure.Adapters.ObjectStorage.Options;
 
 namespace Storage.Infrastructure.Adapters.ObjectStorage.Minio;
 

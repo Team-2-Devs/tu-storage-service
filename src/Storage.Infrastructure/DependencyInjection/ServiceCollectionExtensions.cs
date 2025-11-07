@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Minio;
 using Storage.Application.Ports.Outbound;
 using Storage.Infrastructure.Adapters.ObjectStorage.Minio;
-using Storage.Infrastructure.Adapters.ObjectStorage.Options;
 
 namespace Storage.Infrastructure.DependencyInjection;
 
