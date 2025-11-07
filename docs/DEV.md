@@ -96,7 +96,9 @@ Healthy
 
 ## 5. Smoke tests
 
-> Note: Create or download a sample JPEG to use for testing. Place it on Desktop for ease of testing or note its path and change commands accordingly.
+> **Note:** Place a test image (`sample.jpg`) on your Desktop.  
+> The examples below assume this path; if you use a different location, adjust the commands accordingly.
+
 
 ### 5.1 Presign PUT → Upload
 
@@ -155,14 +157,17 @@ Expected response (example):
 
 **Step 2 – Download the object**
 ```bash
-curl -o downloaded.jpg "<paste-url-here>"
+curl -o "/c/Users/<you>/Desktop/downloaded.jpg" "<paste-url-here>"
 ```
 
 Expected: silent success (`HTTP 200`).
 
 **Step 3 – Verify file integrity**
+
+Ensure both `sample.jpg` (the original you uploaded) and `downloaded.jpg` (the file you just fetched) are in the same location.
+Then run:
 ```bash
-sha256sum sample.jpg downloaded.jpg
+sha256sum "/c/Users/<you>/Desktop/sample.jpg" "/c/Users/<you>/Desktop/downloaded.jpg"
 ```
 
 Expected: identical checksums for both files.
