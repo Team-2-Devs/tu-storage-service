@@ -94,43 +94,78 @@ Healthy
 
 ---
 
-## 5. Smoke test (presign → upload)
+## 5. Smoke tests
 
-### Step 1: Request a presigned PUT URL
+> Note: Create or download a sample JPEG to use for testing. Place it on Desktop for ease of testing or note its path and change commands accordingly.
+
+### 5.1 Presign PUT → Upload
+
+Verify that the service can issue a presigned PUT URL and MinIO accepts the upload.
+
+**Step 1 – Request a presigned PUT URL**
 ```bash
-curl -s http://localhost:5136/internal/v1/storage/presign-put -H "Content-Type: application/json" -d '{"key":"images/2025/10/17/sample.jpg","contentType":"image/jpeg","ttlSec":300}'
+curl -s http://localhost:5136/internal/v1/storage/presign-put -H "Content-Type: application/json" -d '{"key":"images/2025/11/06/sample.jpg","contentType":"image/jpeg","ttlSec":300}'
 ```
 
 Expected response (example):
 ```json
 {
-  "url": "http://localhost:9000/trackunit-images/images/2025/10/17/sample.jpg?...",
-  "expiresAt": "2025-10-17T18:49:57Z"
+  "url": "http://localhost:9000/trackunit-images/images/2025/11/06/sample.jpg?...",
+  "expiresAt": "2025-11-06T18:49:57Z"
 }
 ```
 
----
+**Step 2 – Upload the file**
 
-### Step 2: Upload a file using the presigned URL
-
-**Git Bash:**
+Git Bash:
 ```bash
 curl -T "/c/Users/<you>/Desktop/sample.jpg" -H "Content-Type: image/jpeg" "<paste-url-here>"
 ```
 
-**PowerShell:**
+PowerShell:
 ```powershell
 curl.exe -T "C:\Users\<you>\Desktop\sample.jpg" -H "Content-Type: image/jpeg" "<paste-url-here>"
 ```
 
 Expected: silent success (`HTTP 200` or `204`).
 
+**Step 3 – Verify in MinIO Console**
+
+Open http://localhost:9001 → bucket `trackunit-images` → confirm the object  
+`images/2025/11/06/sample.jpg` exists.
+
 ---
 
-### Step 3: Verify in MinIO Console
+### 5.2 Presign GET → Download
 
-Go to http://localhost:9001 → bucket `trackunit-images` → confirm that  
-`images/2025/10/17/sample.jpg` appears.
+Verify that the service can issue a presigned GET URL and that the uploaded object can be retrieved.
+
+**Step 1 – Request a presigned GET URL**
+```bash
+curl -s http://localhost:5136/internal/v1/storage/presign-get -H "Content-Type: application/json" -d '{"key":"images/2025/11/06/sample.jpg","ttlSec":300}'
+```
+
+Expected response (example):
+```json
+{
+  "url": "http://localhost:9000/trackunit-images/images/2025/11/06/sample.jpg?...",
+  "expiresAt": "2025-11-06T19:32:12Z"
+}
+```
+
+**Step 2 – Download the object**
+```bash
+curl -o downloaded.jpg "<paste-url-here>"
+```
+
+Expected: silent success (`HTTP 200`).
+
+**Step 3 – Verify file integrity**
+```bash
+sha256sum sample.jpg downloaded.jpg
+```
+
+Expected: identical checksums for both files.
 
 ---
 
@@ -138,9 +173,9 @@ Go to http://localhost:9001 → bucket `trackunit-images` → confirm that
 
 | Problem | Cause | Fix |
 |----------|--------|-----|
-| `Request has expired` | The presigned URL TTL expired before upload | Request a new presigned URL with a higher `ttlSec` |
-| `SignatureDoesNotMatch` | PUT used a different Content-Type than the presign request | Ensure the same `Content-Type` header is used when uploading |
-| `AccessDenied` | Bucket `trackunit-images` does not exist | Create the bucket once from MinIO Console |
+| `Request has expired` | The presigned URL TTL expired before use | Re-issue presigned URL with higher `ttlSec` |
+| `AccessDenied` | Bucket missing | Create bucket `trackunit-images` once in MinIO console |
+| `SignatureDoesNotMatch` | Wrong `Content-Type` used | Match header between presign and upload |
 
 
 ---
@@ -175,4 +210,4 @@ For service overview and related services, see [README.md](../README.md).
 
 ---
 
-**Updated:** October 2025
+**Updated:** November 2025
