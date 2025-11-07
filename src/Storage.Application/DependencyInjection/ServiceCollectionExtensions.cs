@@ -12,6 +12,7 @@ public static class ServiceCollectionExtensions
   {
     // Use cases
     services.AddScoped<IPresignPutUrl, PresignPutUrl>();
+    services.AddScoped<IPresignGetUrl, PresignGetUrl>();
 
     // Validators
     // Behaviors
