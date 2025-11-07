@@ -1,7 +1,7 @@
 # API Contract – Storage Service (v1)
 
-**Version:** 1.0 (frozen)  
-**Last updated:** October 2025  
+**Version:** 1.1 (frozen)  
+**Last updated:** November 2025  
 **Owner:** Trackunit Storage Service  
 **Scope:** Internal service-to-service contract used by Ingestion and Media Access.  
 **Status:** Stable – breaking changes require version bump to `/v2/`.
@@ -32,7 +32,7 @@ http://localhost:5136/internal/v1/storage
 Create a **presigned PUT URL** for uploading an object to the storage bucket.
 
 #### Description
-Generates a temporary, signed S3-compatible URL that allows a client (e.g. a mobile app) to upload an object directly to object storage (MinIO, S3, etc.).
+Generates a temporary, signed S3-compatible URL that allows a client (e.g., a mobile app) to upload an object directly to object storage (MinIO, S3, etc.).
 
 Invoked by the Ingestion service, which requests presigned URLs on behalf of upload clients.
 
@@ -69,28 +69,71 @@ Invoked by the Ingestion service, which requests presigned URLs on behalf of upl
 ```json
 {
   "errors": {
-    "key": ["Key cannot be empty"],
-    "contentType": ["Unsupported content type"]
+    "key": ["Required"],
+    "contentType": ["MustStartWithImageSlash"],
+    "ttlSec": ["Range1To3600"]
   }
 }
+
 ```
 
+#### Validation error codes
+| Field | Possible codes | Description |
+|--------|----------------|-------------|
+| `key` | `Required`, `MaxLengthExceeded`, `InvalidPathShape`, `InvalidPathTraversal`, `InvalidCharacterSet` | Object key failed domain validation. |
+| `contentType` *(PUT only)* | `Required`, `MustStartWithImageSlash` | Content type must be an image MIME type. |
+| `ttlSec` | `Range1To3600` | TTL must be between 1 and 3600 seconds. |
+
 #### Response `500 Internal Server Error`
-```json
-{
-  "type": "about:blank",
-  "title": "Internal Server Error",
-  "status": 500,
-  "detail": "Unexpected failure while generating presigned URL."
-}
-```
+See below
 
 ---
 
-### 2. `POST /internal/v1/storage/presign-get` *(planned)*
+### 2. `POST /internal/v1/storage/presign-get`
 
-Reserved for future use.  
-Will issue presigned GET URLs for retrieving uploaded media.
+Create a **presigned GET URL** for downloading an object from the storage bucket.
+
+#### Description
+Generates a temporary, signed S3-compatible URL that allows internal clients (e.g., Media Access service) to retrieve an object directly from object storage (MinIO, S3, etc.).  
+Used in **Use Case 2 – Media Access** to grant short-lived download permissions.
+
+#### Request
+```json
+{
+  "key": "images/2025/11/06/sample.jpg",
+  "ttlSec": 300
+}
+```
+
+#### Parameters
+| Field | Type | Required | Description |
+|-------|------|-----------|-------------|
+| `key` | string | yes | Path of the object within the bucket (validated in domain). |
+| `ttlSec` | integer | yes | Time-to-live in seconds (1 – 3600). Defines how long the presigned URL remains valid. |
+
+#### Response `200 OK`
+```json
+{
+  "url": "http://localhost:9000/trackunit-images/images/2025/11/06/sample.jpg?...",
+  "expiresAt": "2025-11-06T19:32:12Z"
+}
+```
+
+#### Response fields
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | string | The full presigned GET URL. |
+| `expiresAt` | string (ISO 8601) | UTC timestamp when the URL expires. |
+
+#### Response `422 Unprocessable Entity`
+```json
+{
+  "errors": {
+    "key": ["Required"],
+    "ttlSec": ["Range1To3600"]
+  }
+}
+```
 
 ---
 
@@ -106,17 +149,47 @@ Healthy
 
 ---
 
-## Example sequence (use case 1: upload)
+## Common error responses (shared across all endpoints)
 
-1. **Ingestion Service** calls:
+#### Response `500 Internal Server Error`
+```json
+{
+  "type": "about:blank",
+  "title": "Internal Server Error",
+  "status": 500,
+  "detail": "Unexpected failure while generating presigned URL."
+}
+```
+
+---
+
+## Example sequences
+
+### Use case 1: upload
+
+1. **Ingestion Service** calls:  
    ```
-   POST /internal/v1/storage/presign-put
+   POST /internal/v1/storage/presign-put  
    ```
    to obtain a temporary upload URL.
 
 2. **Client** (e.g., mobile app) uploads directly to that URL using HTTP PUT.
 
 3. **Ingestion Service** confirms completion via `/v1/uploads/confirm` (separate contract).
+
+---
+
+### Use case 2: media access
+
+1. **Media Access Service** calls:  
+   ```
+   POST /internal/v1/storage/presign-get  
+   ```
+   to obtain a temporary download URL for an object.
+
+2. **Authorized downstream service** (e.g., AI, visualization, etc.) fetches the object directly using HTTP GET.
+
+3. The presigned URL expires automatically after its TTL, preventing further access.
 
 ---
 
@@ -134,6 +207,7 @@ Healthy
 | Date | Version | Changes |
 |------|----------|----------|
 | 2025-10-17 | v1.0 | Initial frozen contract for `/presign-put` |
+| 2025-11-06 | v1.1 | Added `/presign-get` endpoint |
 
 ---
 
