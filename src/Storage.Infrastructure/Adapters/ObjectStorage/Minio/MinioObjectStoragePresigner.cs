@@ -6,6 +6,9 @@ using Storage.Domain.ValueObjects;
 
 namespace Storage.Infrastructure.Adapters.ObjectStorage.Minio;
 
+/// <summary>
+/// MinIO implementation of <see cref="IObjectStoragePresigner"/> that issues presigned PUT and GET URLs.
+/// </summary>
 public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
 {
   private readonly IMinioClient _client;
@@ -17,6 +20,7 @@ public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
     _options = opt.Value;
   }
 
+  /// <summary>Generates a presigned PUT URL for uploading an object.</summary>
   public async Task<(string url, DateTimeOffset expiresAt)> PresignPutAsync(ObjectKey key, ContentType contentType, TtlSeconds ttl, CancellationToken ct = default)
   {
     var expirySeconds = ttl.Value;
@@ -33,6 +37,7 @@ public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
     return (url, expiresAt);
   }
 
+  /// <summary>Generates a presigned GET URL for downloading an object.</summary>
   public async Task<(string url, DateTimeOffset expiresAt)> PresignGetAsync(ObjectKey key, TtlSeconds ttl, CancellationToken ct = default)
   {
     var expirySeconds = ttl.Value;
