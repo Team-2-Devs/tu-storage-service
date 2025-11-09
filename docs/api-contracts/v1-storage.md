@@ -73,7 +73,7 @@ Invoked by the Ingestion service, which requests presigned URLs on behalf of upl
 {
   "errors": {
     "key": ["Required"],
-    "contentType": ["MustStartWithImageSlash"],
+    "contentType": ["UnsupportedContentType"],
     "ttlSec": ["Range1To3600"]
   }
 }
@@ -84,7 +84,7 @@ Invoked by the Ingestion service, which requests presigned URLs on behalf of upl
 | Field | Possible codes | Description |
 |--------|----------------|-------------|
 | `key` | `Required`, `MaxLengthExceeded`, `InvalidPathShape`, `InvalidPathTraversal`, `InvalidCharacterSet` | Object key failed domain validation. |
-| `contentType` *(PUT only)* | `Required`, `MustStartWithImageSlash` | Content type must be an image MIME type. |
+| `contentType` *(PUT only)* | `Required`, `UnsupportedContentType` | Content type must be an image MIME type. |
 | `ttlSec` | `Range1To3600` | TTL must be between 1 and 3600 seconds. |
 
 #### Response 500 Internal Server Error

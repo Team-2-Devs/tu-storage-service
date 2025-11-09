@@ -7,6 +7,13 @@ namespace Storage.Domain.ValueObjects;
 /// </summary>
 public sealed class ContentType : IEquatable<ContentType>
 {
+  private static readonly HashSet<string> AllowedTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    };
+
   public string Value { get; }
 
   private ContentType(string value) => Value = value;
@@ -30,9 +37,9 @@ public sealed class ContentType : IEquatable<ContentType>
       return false;
     }
 
-    if (!input.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+    if (!AllowedTypes.Contains(input))
     {
-      error = "MustStartWithImageSlash";
+      error = "UnsupportedContentType";
       return false;
     }
 
