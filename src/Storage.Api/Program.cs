@@ -1,4 +1,5 @@
 ﻿using Storage.Api.DependencyInjection;
+using Storage.Api.Hosting;
 using Storage.Application.DependencyInjection;
 using Storage.Infrastructure.DependencyInjection;
 
@@ -25,6 +26,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Require internal token for all request to Storage.Api
+app.UseMiddleware<InternalAuthMiddleware>();
 
 app.UseAuthorization();
 
