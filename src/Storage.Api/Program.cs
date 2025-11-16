@@ -1,4 +1,5 @@
-﻿using Storage.Application.DependencyInjection;
+﻿using Storage.Api.DependencyInjection;
+using Storage.Application.DependencyInjection;
 using Storage.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // Compose layers
+builder.Services.AddApi(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration); // Composition root wires Infrastructure dependencies
 
