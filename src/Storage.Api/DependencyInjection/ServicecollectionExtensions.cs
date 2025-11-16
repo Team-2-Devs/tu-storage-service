@@ -2,7 +2,7 @@
 
 namespace Storage.Api.DependencyInjection;
 
-public static class ServicecollectionExtensions
+public static class ServiceCollectionExtensions
 {
   public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration config)
   {
