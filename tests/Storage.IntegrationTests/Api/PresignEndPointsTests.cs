@@ -12,6 +12,7 @@ public sealed class PresignEndpointsTests : IClassFixture<CustomWebApplicationFa
   public PresignEndpointsTests(CustomWebApplicationFactory factory)
   {
     _client = factory.CreateClient();
+    _client.DefaultRequestHeaders.Add("x-internal-token", "test-storage-token");
   }
 
   private sealed record PresignGetRequest(string Key, int TtlSec);

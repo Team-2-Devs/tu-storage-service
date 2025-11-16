@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Storage.Application.Ports.Outbound;
 using Storage.Domain.ValueObjects;
@@ -10,8 +11,20 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
   protected override void ConfigureWebHost(IWebHostBuilder builder)
   {
+    builder.ConfigureAppConfiguration((context, configbuilder) =>
+    {
+      // Test only configuration for internal auth
+      var testConfig = new Dictionary<string, string?>()
+      {
+        ["InternalAuth:ApiKey"] = "test-storage-token"
+      };
+
+      configbuilder.AddInMemoryCollection(testConfig);
+    });
+
     builder.ConfigureServices(services =>
     {
+      // Replace real ObjectStoragePresigner with fake
       var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IObjectStoragePresigner));
       if (descriptor is not null) services.Remove(descriptor);
 
