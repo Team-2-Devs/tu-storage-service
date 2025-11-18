@@ -1,212 +1,220 @@
-﻿# Developer Guide – Storage Service
+﻿# DEV.md – Local Development Guide (Storage Service)
 
-This document explains how to run the **Trackunit Storage Service** locally, connect it to a local MinIO instance, and perform a smoke test to verify presigned URL generation and uploads.
+This guide explains how to run the **Trackunit Storage Service** locally in two supported modes:
+
+* **Option A (Recommended): Docker Compose** – runs Storage.Api + MinIO
+* **Option B: dotnet run** – runs Storage.Api in your IDE for debugging
+
+Each mode uses a different configuration method. Use only one at a time.
 
 ---
 
 ## 1. Prerequisites
 
-- **Docker Desktop** (WSL2 + Virtual Machine Platform enabled)
-- **.NET 8 SDK**
-- Optional: `curl` (included in Git Bash / PowerShell 7+)
+* Docker Desktop
+* .NET 8 SDK
+* curl (Git Bash or PowerShell 7+)
 
-Check installation:
-```bash
+Verify installation:
+
+```
 docker version
 dotnet --version
 ```
 
 ---
 
-## 2. Local infrastructure (MinIO)
+## 2. Configuration Overview
 
-> **Note:** Ensure Docker Desktop is running before executing this command:
+### Docker Compose uses `.env`
 
-**Start MinIO:**
-```
-docker compose up -d
-```
+* Contains MinIO credentials and internal API key.
+* `.env` is **not committed**.
+* Loaded automatically by Docker Compose.
 
-**Verify:**
-```bash
-docker ps
-```
+### dotnet run uses **User Secrets**
 
-Expected output includes:
-```
-IMAGE                PORTS
-minio/minio:latest   0.0.0.0:9000-9001->9000-9001/tcp
-```
+* Only used for IDE debugging.
+* Secrets stored outside the repository.
 
-**Access MinIO Console:**
-- URL: http://localhost:9001
-- Username: `minioadmin`
-- Password: `minioadmin`
-
-**Default bucket:**
-`trackunit-images`
-
-If it doesn’t exist, create it once from the console.
+Do **not** mix these methods.
 
 ---
 
-## 3. Configure secrets
+## 3. Option A – Run Storage + MinIO using Docker Compose (Recommended)
 
-The service uses .NET User Secrets for local credentials.
+### 3.1 Create `.env` from template
 
-Running the following commands automatically creates the secret store if it does not already exist:
-
-Run once:
-```bash
-dotnet user-secrets set "Minio:AccessKey" "minioadmin" --project src/Storage.Api
-dotnet user-secrets set "Minio:SecretKey" "minioadmin" --project src/Storage.Api
+```
+cp .env.example .env
 ```
 
-Verify:
-```bash
-dotnet user-secrets list --project src/Storage.Api
+Edit `.env` and provide local development values.
+The example contains placeholders such as:
+
+```
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin
+INTERNAL_AUTH_API_KEY=changeme
 ```
 
-Expected keys:
+### 3.2 Start the environment
+
 ```
-Minio:AccessKey = minioadmin
-Minio:SecretKey = minioadmin
-```
-
----
-
-## 4. Run the API
-
-Start the service:
-```bash
-dotnet run --project src/Storage.Api
+docker compose up --build
 ```
 
-Check health:
-```bash
-curl -s http://localhost:5136/health
+This will:
+
+* Build the Storage API container
+* Start Storage API on port 8080
+* Start MinIO on ports 9000/9001
+* Inject credentials from `.env`
+
+### 3.3 Verify Storage
+
+```
+curl http://localhost:8080/health
 ```
 
-Expected output:
+Expected:
+
 ```
-Healthy
-```
-
----
-
-## 5. Smoke tests
-
-> **Note:** Place a test image (`sample.jpg`) on your Desktop.  
-> The examples below assume this path; if you use a different location, adjust the commands accordingly.
-
-
-### 5.1 Presign PUT → Upload
-
-Verify that the service can issue a presigned PUT URL and MinIO accepts the upload.
-
-**Step 1 – Request a presigned PUT URL**
-```bash
-curl -s http://localhost:5136/internal/v1/storage/presign-put -H "Content-Type: application/json" -d '{"key":"images/2025/11/06/sample.jpg","contentType":"image/jpeg","ttlSec":300}'
+Missing Internal token
 ```
 
-Expected response (example):
-```json
-{
-  "url": "http://localhost:9000/trackunit-images/images/2025/11/06/sample.jpg?...",
-  "expiresAt": "2025-11-06T18:49:57Z"
-}
+(This indicates Storage.Api is running.)  
+(Note: /health currently requires the internal auth token. This may change later.)
+
+
+### 3.4 Verify MinIO
+
+Open:
+
+```
+http://localhost:9001
 ```
 
-**Step 2 – Upload the file**
+Log in using the credentials from `.env`.
 
-Git Bash:
-```bash
-curl -T "/c/Users/<you>/Desktop/sample.jpg" -H "Content-Type: image/jpeg" "<paste-url-here>"
+Create bucket `trackunit-images` **once**, if it does not already exist.
+
+### 3.5 Stop the environment
+
 ```
-
-PowerShell:
-```powershell
-curl.exe -T "C:\Users\<you>\Desktop\sample.jpg" -H "Content-Type: image/jpeg" "<paste-url-here>"
-```
-
-Expected: silent success (`HTTP 200` or `204`).
-
-**Step 3 – Verify in MinIO Console**
-
-Open http://localhost:9001 → bucket `trackunit-images` → confirm the object  
-`images/2025/11/06/sample.jpg` exists.
-
----
-
-### 5.2 Presign GET → Download
-
-Verify that the service can issue a presigned GET URL and that the uploaded object can be retrieved.
-
-**Step 1 – Request a presigned GET URL**
-```bash
-curl -s http://localhost:5136/internal/v1/storage/presign-get -H "Content-Type: application/json" -d '{"key":"images/2025/11/06/sample.jpg","ttlSec":300}'
-```
-
-Expected response (example):
-```json
-{
-  "url": "http://localhost:9000/trackunit-images/images/2025/11/06/sample.jpg?...",
-  "expiresAt": "2025-11-06T19:32:12Z"
-}
-```
-
-**Step 2 – Download the object**
-```bash
-curl -o "/c/Users/<you>/Desktop/downloaded.jpg" "<paste-url-here>"
-```
-
-Expected: silent success (`HTTP 200`).
-
-**Step 3 – Verify file integrity**
-
-Ensure both `sample.jpg` (the original you uploaded) and `downloaded.jpg` (the file you just fetched) are in the same location.
-Then run:
-```bash
-sha256sum "/c/Users/<you>/Desktop/sample.jpg" "/c/Users/<you>/Desktop/downloaded.jpg"
-```
-
-Expected: identical checksums for both files.
-
----
-
-## 6. Troubleshooting
-
-| Problem | Cause | Fix |
-|----------|--------|-----|
-| `Request has expired` | The presigned URL TTL expired before use | Re-issue presigned URL with higher `ttlSec` |
-| `AccessDenied` | Bucket missing | Create bucket `trackunit-images` once in MinIO console |
-| `SignatureDoesNotMatch` | Wrong `Content-Type` used | Match header between presign and upload |
-
-
----
-
-## 7. Tear down
-
-Stop MinIO:
-```bash
 docker compose down
 ```
 
-Remove all volumes (optional):
-```bash
+Reset MinIO (optional - would require bucket creation again):
+
+```
 docker compose down -v
 ```
 
 ---
 
-## 8. Developer checklist
+## 4. Option B – Run Storage with `dotnet run` (Debug Mode)
 
-- [ ] `docker compose up -d`
-- [ ] Secrets configured via user-secrets
-- [ ] `dotnet run` → `/health` returns Healthy
-- [ ] Presign URL works
-- [ ] Upload succeeds via `curl`
-- [ ] Object visible in MinIO Console
+### 4.1 Start MinIO only
+
+```
+docker compose up -d minio
+```
+
+### 4.2 Configure User Secrets
+Change < values >
+
+```
+dotnet user-secrets set "Minio:AccessKey" "<your-access-key>" --project src/Storage.Api
+dotnet user-secrets set "Minio:SecretKey" "<your-secret-key>" --project src/Storage.Api
+dotnet user-secrets set "InternalAuth:ApiKey" "<your-internal-auth-key>" --project src/Storage.Api
+```
+
+Verify:
+
+```
+dotnet user-secrets list --project src/Storage.Api
+```
+
+### 4.3 Run the API
+
+```
+dotnet run --project src/Storage.Api
+```
+
+Health check:
+
+```
+curl http://localhost:<port>/health
+```
+
+Expected:
+
+```
+Missing Internal token
+```
+(This indicates Storage.Api is running.)  
+(Note: /health currently requires the internal auth token. This may change later.)
+
+---
+
+## 5. Smoke Tests
+
+### 5.1 Request a presigned PUT URL
+
+```
+curl -s http://localhost:8080/internal/v1/storage/presign-put \
+  -H "Content-Type: application/json" \
+  -H "X-Internal-Token: <your-internal-auth-key>" \
+  -d '{"key":"test.jpg","contentType":"image/jpeg","ttlSec":600}'
+```
+
+### 5.2 Upload a file
+
+```
+curl -T "/c/Users/<you>/Desktop/sample.jpg" \
+  -H "Content-Type: image/jpeg" \
+  "<presigned-url>"
+```
+
+### 5.3 Request a presigned GET URL
+
+```
+curl -s http://localhost:8080/internal/v1/storage/presign-get \
+  -H "Content-Type: application/json" \
+  -H "X-Internal-Token: <your-internal-auth-key>" \
+  -d '{"key":"test.jpg","ttlSec":300}'
+```
+
+### 5.4 Download the file
+
+```
+curl -o "/c/Users/<you>/Desktop/downloaded.jpg" "<presigned-url>"
+```
+
+---
+
+## 6. Troubleshooting
+
+| Issue                   | Cause                 | Resolution                             |
+| ----------------------- | --------------------- | -------------------------------------- |
+| `Request has expired`   | TTL too short         | Increase `ttlSec`                      |
+| `AccessDenied`          | Bucket missing        | Create `trackunit-images` in MinIO     |
+| `SignatureDoesNotMatch` | Content-Type mismatch | Match Content-Type on presign + upload |
+
+---
+
+## 7. Developer Checklist
+
+* [ ] `.env` created from `.env.example` (Option A)
+* [ ] User Secrets configured (Option B)
+* [ ] Storage.Api reachable on port 8080
+* [ ] MinIO console reachable on port 9001
+* [ ] Bucket `trackunit-images` exists
+* [ ] Presign PUT works
+* [ ] Upload works
+* [ ] Presign GET works
+* [ ] File download verified
 
 ---
 
@@ -214,5 +222,4 @@ docker compose down -v
 For service overview and related services, see [README.md](../README.md).
 
 ---
-
-**Updated:** November 2025
+**Updated:** November 2025 (11/18)

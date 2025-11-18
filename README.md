@@ -27,13 +27,13 @@ Storage microservice for Trackunit.
 - [tu-ingestion-service](https://github.com/Team-2-Devs/tu-ingestion-service) – handles upload initiation and confirmation, publishes events
 - [tu-media-access-service](https://github.com/Team-2-Devs/tu-media-access-service) – provides authorized access to media via pre-signed GET from Storage
 
-## Local dev
-```bash
-dotnet run --project src/Storage.Api
-```
+## Local development
 
-## Developer setup
-For local infrastructure (MinIO) and smoke test instructions, see [DEV.md](./docs/DEV.md).
+See [DEV.md](./docs/DEV.md) for full setup instructions.
+
+Two modes are supported:
+- **Docker Compose (recommended)** – runs Storage + MinIO
+- **dotnet run** – for debugging in IDE
 
 ## API Contracts
 Formal versioned specifications of service-to-service interfaces. 
