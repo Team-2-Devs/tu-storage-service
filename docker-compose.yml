@@ -1,4 +1,24 @@
 services:
+  storage-api:
+    build:
+      context: .
+      dockerfile: src/Storage.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+
+      Minio__Endpoint: "minio:9000"
+      Minio__Region: "eu-central-1"
+      Minio__AccessKey: "${MINIO_ROOT_USER}"
+      Minio__SecretKey: "${MINIO_ROOT_PASSWORD}"
+      Minio__UseSsl: "false"
+      Minio__BucketName: "trackunit-images"
+
+      InternalAuth__ApiKey: "${INTERNAL_AUTH_API_KEY}"
+    depends_on:
+      - minio
+  
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
@@ -10,5 +30,6 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio-data:/data
+
 volumes:
   minio-data:
