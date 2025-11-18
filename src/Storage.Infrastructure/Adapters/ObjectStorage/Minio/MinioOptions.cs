@@ -8,6 +8,7 @@ public sealed class MinioOptions
   [Required] public required string AccessKey { get; init; } = null!;
   [Required] public required string SecretKey { get; init; } = null!;
   [Required] public required string BucketName { get; init; } = null!;
+  [Required] public required string PublicBaseUrl { get; init; } = null!;
 
   public bool UseSsl { get; init; }
   public string Region { get; init; } = "eu-central-1";

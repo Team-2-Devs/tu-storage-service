@@ -11,13 +11,27 @@ namespace Storage.Infrastructure.Adapters.ObjectStorage.Minio;
 /// </summary>
 public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
 {
-  private readonly IMinioClient _client;
+  private readonly IMinioClient _internalClient; // for later
+  private readonly IMinioClient _publicClient;
   private readonly MinioOptions _options;
 
-  public MinioObjectStoragePresigner(IMinioClient client, IOptions<MinioOptions> opt)
+  public MinioObjectStoragePresigner(IMinioClient internalClient, IOptions<MinioOptions> opt)
   {
-    _client = client;
+    _internalClient = internalClient;
     _options = opt.Value;
+
+    // Build a separate client for presigning using PublicBaseUrl host
+    var publicUri = new Uri(_options.PublicBaseUrl);
+
+    var builder = new MinioClient()
+      .WithEndpoint(publicUri.Host, publicUri.IsDefaultPort ? (publicUri.Scheme == "https" ? 443 : 80) : publicUri.Port)
+      .WithCredentials(_options.AccessKey, _options.SecretKey)
+      .WithRegion(_options.Region);
+
+    if (_options.UseSsl || publicUri.Scheme == Uri.UriSchemeHttps)
+      builder = builder.WithSSL();
+
+    _publicClient = builder.Build();
   }
 
   /// <summary>Generates a presigned PUT URL for uploading an object.</summary>
@@ -30,7 +44,7 @@ public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
       .WithObject(key.Value)
       .WithExpiry(expirySeconds);
 
-    var url = await _client.PresignedPutObjectAsync(args).ConfigureAwait(false);
+    var url = await _publicClient.PresignedPutObjectAsync(args).ConfigureAwait(false);
 
     var expiresAt = DateTimeOffset.UtcNow.AddSeconds(expirySeconds);
 
@@ -47,7 +61,7 @@ public sealed class MinioObjectStoragePresigner : IObjectStoragePresigner
       .WithObject(key.Value)
       .WithExpiry(expirySeconds);
 
-    var url = await _client.PresignedGetObjectAsync(args).ConfigureAwait(false);
+    var url = await _publicClient.PresignedGetObjectAsync(args).ConfigureAwait(false);
 
     var expiresAt = DateTimeOffset.UtcNow.AddSeconds(expirySeconds);
 

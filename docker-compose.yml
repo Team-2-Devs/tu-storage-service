@@ -14,6 +14,7 @@ services:
       Minio__SecretKey: "${MINIO_ROOT_PASSWORD}"
       Minio__UseSsl: "false"
       Minio__BucketName: "trackunit-images"
+      Minio__PublicBaseUrl: "http://localhost:9000"
 
       InternalAuth__ApiKey: "${INTERNAL_AUTH_API_KEY}"
     depends_on:
